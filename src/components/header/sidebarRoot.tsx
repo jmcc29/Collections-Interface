@@ -11,18 +11,36 @@ import {
   ReportIcon,
 } from "@/components";
 import { useSidebar } from "@/app/providers";
+import { usePermissions } from "@/utils/context/PermissionContext";
 
 export const SidebarRoot = () => {
   const { collapsed, toggleCollapsed } = useSidebar();
+  const { can } = usePermissions();
   const CollapseIcon = collapsed ? CollapseFalseIcon : CollapseTrueIcon;
   const router = useRouter();
   const pathname = usePathname();
 
   const menuItems = [
-    { label: "Inicio", href: "/", icon: HomeIcon },
-    { label: "Importaciones", href: "/imports", icon: ImportIcon },
-    { label: "Reportes", href: "/reports", icon: ReportIcon },
-  ];
+    {
+      label: "Inicio",
+      href: "/",
+      icon: HomeIcon,
+      visible: can("transactions", "read"),
+    },
+    {
+      label: "Importaciones",
+      href: "/imports",
+      icon: ImportIcon,
+      visible:
+        can("bank_statements", "read") || can("bank_statements", "write"),
+    },
+    {
+      label: "Reportes",
+      href: "/reports",
+      icon: ReportIcon,
+      visible: can("reports", "download"),
+    },
+  ].filter((item) => item.visible);
 
   return (
     <aside

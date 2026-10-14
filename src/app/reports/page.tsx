@@ -12,8 +12,11 @@ import {
 import { useState } from "react";
 
 import { PdfIcon, ExcelIcon } from "@/components";
+import { usePermissions } from "@/utils/context/PermissionContext";
 
 export default function Persons() {
+  const { can } = usePermissions();
+  const canDownload = can("reports", "download");
   const dateNow = new Date().toISOString().split("T")[0];
 
   const [dateFrom, setDateFrom] = useState(dateNow);
@@ -21,6 +24,10 @@ export default function Persons() {
   const [, setLoading] = useState(false);
 
   const downloadReportAllSales = async (format: string) => {
+    if (!canDownload) {
+      toast.danger("No tiene permiso para descargar reportes");
+      return;
+    }
     try {
       setLoading(true);
       const query = new URLSearchParams({ dateFrom, dateTo, format });
@@ -100,6 +107,7 @@ export default function Persons() {
           <div className="flex w-1/2 flex-col gap-1 overflow-y-auto overflow-x-hidden">
             <Button
               variant="tertiary"
+              isDisabled={!canDownload}
               onPress={() => {
                 downloadReportAllSales("pdf");
               }}
@@ -115,6 +123,7 @@ export default function Persons() {
           <div className="flex flex-col h-4/5 rounded-lg">
             <Button
               variant="tertiary"
+              isDisabled={!canDownload}
               onPress={() => {
                 downloadReportAllSales("csv");
               }}
